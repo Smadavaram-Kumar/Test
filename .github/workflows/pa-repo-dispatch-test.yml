@@ -45,6 +45,9 @@ jobs:
             const issue_number = Number(process.env.ISSUE_NUMBER);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            
+            console.log(`Repo: ${owner}/${repo}`);
+            console.log(`Issue: ${issue_number}`);
 
             if (!issue_number) {
               core.setFailed("client_payload.issueNumber is missing (ISSUE_NUMBER empty).");
@@ -286,7 +289,10 @@ jobs:
             const issue_number = Number(process.env.ISSUE_NUMBER);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-
+            
+            console.log(`Repo: ${owner}/${repo}`);
+            console.log(`Issue: ${issue_number}`);
+            
             if (!issue_number) return;
 
             await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
@@ -300,6 +306,9 @@ jobs:
             const issue_number = Number(process.env.ISSUE_NUMBER);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+
+            console.log(`Repo: ${owner}/${repo}`);
+            console.log(`Issue: ${issue_number}`);
 
             if (!issue_number) return;
 
