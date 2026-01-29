@@ -317,6 +317,6 @@ jobs:
             await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
             await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Failed"] });
             
-            const assignees = ["Smadavaram-Kumar"]; # replace with GitHub username(s)
+            const assignees = ["Smadavaram-Kumar"]; 
             await github.rest.issues.addAssignees({owner, repo, issue_number,assignees });
 
