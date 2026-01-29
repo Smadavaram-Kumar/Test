@@ -298,7 +298,7 @@ jobs:
             await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
             await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Completed"] });
             await github.rest.issues.update({ owner, repo, issue_number, state: "closed" });
-            await github.rest.issues.createComment({ owner, repo, issue_number, body: "The deployment is Completed !!!" });
+            await github.rest.issues.createComment({ owner, repo, issue_number, body: "Hurray, the Deployment completed successfully."});
 
       - name: Mark tracking issue failed
         if: failure()
@@ -316,6 +316,7 @@ jobs:
 
             await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
             await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Failed"] });
+            await github.rest.issues.createComment({ owner, repo, issue_number, body: "Sorry, the deployment is Failed" });
             
             const assignees = ["Smadavaram-Kumar"]; 
             await github.rest.issues.addAssignees({owner, repo, issue_number,assignees });
