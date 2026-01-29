@@ -11,11 +11,18 @@ env:
   UNMANAGED_FOLDER: ./exported/unmanaged
   UNPACKED_FOLDER: ./exported/unpacked
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
+      
+      ISSUE_NUMBER: ${{ github.event.client_payload.issueNumber }}
+      
       # SPN (Service Principal) secrets
       AZURE_TENANT_ID: ${{ secrets.PP_TENANT_ID }}
       AZURE_CLIENT_ID: ${{ secrets.PP_CLIENT_ID }}
@@ -31,6 +38,24 @@ jobs:
       SOLUTION_ZIP_NAME: ${{ github.event.client_payload.solutionName }}.zip
 
     steps:
+      - name: Mark tracking issue inprogress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = Number(process.env.ISSUE_NUMBER);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            if (!issue_number) {
+              core.setFailed("client_payload.issueNumber is missing (ISSUE_NUMBER empty).");
+              return;
+            }
+
+            await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "completed" }).catch(() => {});
+            await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "failed" }).catch(() => {});
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Inprogress"] });
+
+    
       - name: Checkout
         uses: actions/checkout@v5
 
@@ -251,4 +276,33 @@ jobs:
             --path "$SOL_PATH" \
             --settings-file "${{ env.MANAGED_FOLDER }}/settings.json" \
             --force-overwrite
+
+
+      - name: Mark tracking issue completed
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = Number(process.env.ISSUE_NUMBER);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            if (!issue_number) return;
+
+            await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Completed"] });
+
+      - name: Mark tracking issue failed
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = Number(process.env.ISSUE_NUMBER);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            if (!issue_number) return;
+
+            await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "inprogress" }).catch(() => {});
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["Failed"] });
 
